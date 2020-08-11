@@ -1,0 +1,4 @@
+-r base.requirements.txt
+black==19.10b0
+flake8==3.8.3
+pre-commit==2.6.0
