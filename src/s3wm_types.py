@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from src.utils import get_window_geometry
 from Xlib import XK, X
-from Xlib.protocol.display import Screen
+from Xlib.display import Display
 from Xlib.xobject.drawable import Window
 
 logger = logging.getLogger(__name__)
@@ -73,32 +73,40 @@ class AbstractLayoutManager(ABC):
         logger.debug(f"Found {self.screen_count} screens")
 
     @abstractmethod
-    def add_window(self, window: Window, screen: Screen):
+    def add_window(self, window: Window, display: Display):
         """
         Add window to Layout manager.
         This method must put window under control of current LayoutManager.
         :param window: added window
-        :param screen: current screen
+        :param display: current screen
         """
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
-    def update_layout(self, screen: Screen):
+    def update_layout(self, display: Display):
         """
         Place all windows according to rules defined here.
-        :param screen: current screen
+        :param display: current display
         """
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
-    def remove_window(self, window: Window, screen: Screen):
+    def remove_window(self, window: Window, display: Display):
         """
         Remove window from LayoutManager.
 
         :param window: window that was removed.
-        :param screen: screen
+        :param display: screen
         """
-        raise NotImplementedError()
+        pass
+
+    @abstractmethod
+    def focus_in(self):
+        pass
+
+    @abstractmethod
+    def focus_out(self):
+        pass
 
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:

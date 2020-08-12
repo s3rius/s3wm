@@ -19,13 +19,13 @@ class WindowGroup(object):
     def __init__(
         self,
         direction: Direction = Direction.RIGHT,
-        windows: Optional[List[S3window]] = None,
+        inner: Optional[List[Union[S3window, "WindowGroup"]]] = None,
     ):
         self.direction = direction
         self.screen = None
-        self.nested_groups: List[Union[S3window, WindowGroup]] = []
-        if windows:
-            self.nested_groups = windows
+        self.nested_groups = []
+        if inner:
+            self.nested_groups = inner
 
     def add_window(self, window: Window):
         self.nested_groups.append(S3window(window))
@@ -35,6 +35,17 @@ class WindowGroup(object):
 
     def update_layout(self, screen):
         pass
+
+    def find_group_by_window(self, window) -> Optional["WindowGroup"]:
+        try:
+            self.nested_groups.index(window)
+            return self
+        except ValueError:
+            for group in filter(
+                lambda x: isinstance(x, WindowGroup), self.nested_groups
+            ):
+                if group.find_group_by_window(window):
+                    return group
 
     def unmap_all(self):
         for group in self.nested_groups:

@@ -36,7 +36,7 @@ class S3WM:
         logger.debug("Mapping window")
         window = map_event.window
         window.map()
-        self.layout.add_window(window, self.display.screen())
+        self.layout.add_window(window, self.display)
         mask = X.EnterWindowMask | X.LeaveWindowMask
         logger.info(f"{window.__class__}")
         window.change_attributes(event_mask=mask)
@@ -63,7 +63,7 @@ class S3WM:
         :param destroy_event:
         :return:
         """
-        self.layout.remove_window(destroy_event.window, self.display.screen())
+        self.layout.remove_window(destroy_event.window, self.display)
 
     def catch_events(self):
         """Configure the root window to receive all events needed for managing
