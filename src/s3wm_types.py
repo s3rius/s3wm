@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -5,6 +6,8 @@ from src.utils import get_window_geometry
 from Xlib import XK, X
 from Xlib.protocol.display import Screen
 from Xlib.xobject.drawable import Window
+
+logger = logging.getLogger(__name__)
 
 
 class KeyCombination:
@@ -55,12 +58,19 @@ class S3window(object):
             }
         return geom.x, geom.y, geom.height, geom.width
 
+    def hide(self):
+        self.window.unmap()
+
 
 class AbstractLayoutManager(ABC):
     gaps = 5
 
-    def __init__(self, _wm):
+    def __init__(self, wm):
         self.current_tag = 1
+        xinerama_info = wm.display.xinerama_query_screens()
+        self.screen_count = xinerama_info.number
+        self.screens = xinerama_info.screens
+        logger.debug(f"Found {self.screen_count} screens")
 
     @abstractmethod
     def add_window(self, window: Window, screen: Screen):

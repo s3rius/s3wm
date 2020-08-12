@@ -1,6 +1,6 @@
 import subprocess
 
-from src.layouts.default_tile import DefaultTile
+from src.layouts.default_tile import TileLayout
 from src.s3wm_types import KeyCombination
 from Xlib import X
 
@@ -22,7 +22,7 @@ def startup():
 
 
 # Default layout mode.
-layout = DefaultTile
+layout = TileLayout
 layout.gaps = 20
 
 # Keyboard global combinations.
