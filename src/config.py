@@ -2,6 +2,7 @@ import subprocess
 
 from src.layouts.default_tile import TileLayout
 from src.s3wm_types import KeyCombination
+from src.utils import kill_focused_window
 from Xlib import X
 
 FRAME_WIDTH = 10
@@ -23,7 +24,8 @@ def startup():
 
 # Default layout mode.
 layout = TileLayout
-layout.gaps = 20
+layout.inner_gaps = 10
+layout.outer_gaps = 40
 
 # Keyboard global combinations.
 # All combinations for layoutManager
@@ -39,6 +41,11 @@ combinations = [
     KeyCombination(modifiers=KeyCombination.default_mod_key, key="e", action="thunar"),
     KeyCombination(
         modifiers=KeyCombination.default_mod_key, key="d", action="dmenu_run"
+    ),
+    KeyCombination(
+        modifiers=KeyCombination.default_mod_key | X.ShiftMask,
+        key="c",
+        action=kill_focused_window,
     ),
     *layout.get_keys(),
 ]

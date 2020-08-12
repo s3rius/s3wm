@@ -62,3 +62,16 @@ def get_usable_screen_size(screen):
     width, height = get_screen_size(screen)
     logger.debug(f"get_usable_screen_size -> w:{width} h:{height}")
     return width, height
+
+
+def kill_focused_window(wm):
+    """
+    Kill window that user is currently focused at.
+    :param wm: current S3WM instance
+    """
+    screen = wm.display.screen()
+    pointer_info = screen.root.query_pointer()
+    target_window = pointer_info.child
+    if target_window == screen.root:
+        return
+    target_window.destroy()
