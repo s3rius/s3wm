@@ -1,0 +1,117 @@
+[flake8]
+max-complexity = 6
+inline-quotes = double
+max-line-length = 88
+extend-ignore = E203
+docstring_style=sphinx
+
+ignore =
+  ; Found `f` string
+  WPS305,
+  ; Missing docstring in public module
+  D100,
+  ; Missing docstring in magic method
+  D105,
+  ; Missing docstring in __init__
+  D107,
+  ; Found class without a base class
+  WPS306,
+  ; Missing docstring in public nested class
+  D106,
+  ; Found `__init__.py` module with logic
+  WPS412,
+  ; Found implicit string concatenation
+  WPS326,
+  ; Found string constant over-use
+  WPS226,
+  ; Found upper-case constant in a class
+  WPS115,
+  ; Found nested function
+  WPS430,
+  ; Found using `@staticmethod`
+  WPS602,
+  ; Found method without arguments
+  WPS605,
+  ; Found overused expression
+  WPS204,
+  ; Found too many module members
+  WPS202,
+  ; Found too high module cognitive complexity
+  WPS232,
+  ; line break before binary operator
+  W503,
+  ; Found module with too many imports
+  WPS201,
+  ; Inline strong start-string without end-string.
+  RST210,
+  ; missing trailing comma
+  C812,
+
+per-file-ignores =
+  ; all tests
+  test_*.py,tests.py,tests_*.py,*/tests/*:
+  ; Use of assert detected
+  S101,
+  ; ignore type annotations coverage
+  TAE001,
+  ; 1 blank line required between summary line and description
+  D205,
+  ; Missing docstring in public method
+  D102,
+  ; Missing parameter(s) in Docstring
+  DAR101,
+  ; Missing exception(s) in Raises section
+  DAR401,
+  ; Missing "Returns" in Docstring
+  DAR201,
+  ; Found protected attribute usage
+  WPS437,
+  ; Found too many local variables
+  WPS210,
+  ; Found magic number
+  WPS432,
+  ; Found too many arguments
+  WPS211,
+  ; Found too many `assert` statements
+  WPS218,
+  ; Found too many methods
+  WPS214,
+  ; Found too many public instance attributes
+  WPS230,
+  ; Found incorrect order of methods in a class
+  WPS338,
+  ; Found too many imported names from a module
+  WPS235,
+  ; Found incorrect unpacking target
+  WPS414,
+
+  ; all init files
+  __init__.py:
+  ; ignore not used imports
+  F401,
+  ; ignore import with wildcard
+  F403,
+
+  ; conftest file
+  conftest.py:
+  ; Found protected module import
+  WPS436,
+  ; isort found an import in the wrong position
+  I001,
+  ; isort found an unexpected blank line in imports
+  I004,
+  ; unable to detect undefined names
+  F403,
+  ; imported but unused
+  F401,
+  ; Found vague import that may cause confusion
+  WPS347,
+  ; Found wrong magic comment
+  WPS400,
+
+exclude =
+  ./.git,
+  ./venv,
+  ./cached_venv,
+  ./docs,
+  ./var,
