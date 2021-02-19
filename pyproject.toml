@@ -7,6 +7,8 @@ authors = ["Pavel Kirilin <win10@list.ru>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 xlib = "^0.21"
+loguru = "^0.5.3"
+frozendict = "^1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -17,6 +19,7 @@ isort = "^5.7.0"
 pre-commit = "^2.10.1"
 yesqa = "^1.2.2"
 autoflake = "^1.4"
+wemake-python-styleguide = "^0.15.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

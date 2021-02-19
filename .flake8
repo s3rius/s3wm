@@ -18,6 +18,8 @@ ignore =
   WPS306,
   ; Missing docstring in public nested class
   D106,
+  ; First line should be in imperative mood
+  D401,
   ; Found `__init__.py` module with logic
   WPS412,
   ; Found implicit string concatenation
@@ -42,10 +44,14 @@ ignore =
   W503,
   ; Found module with too many imports
   WPS201,
+  ; Found vague import that may cause confusion: X
+  WPS347,
   ; Inline strong start-string without end-string.
   RST210,
-  ; missing trailing comma
-  C812,
+  ; subprocess call with shell=True seems safe, but may be changed in the future.
+  S602,
+  ; Starting a process with a partial executable path.
+  S607
 
 per-file-ignores =
   ; all tests
