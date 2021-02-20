@@ -1,4 +1,4 @@
-from subprocess import Popen  # noqa: S404
+from subprocess import Popen
 
 from loguru import logger
 from src.keymap import get_key_action, init_keymap

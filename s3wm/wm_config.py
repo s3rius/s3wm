@@ -1,6 +1,6 @@
 """Default WM configuration."""
 
-import subprocess  # noqa: S404
+import subprocess
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import Any

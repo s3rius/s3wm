@@ -3,12 +3,17 @@ name = "s3wm"
 version = "0.1.0"
 description = ""
 authors = ["Pavel Kirilin <win10@list.ru>"]
+packages = [
+    {include = "s3wm"},
+    {include = "s3wm_core"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 xlib = "^0.21"
 loguru = "^0.5.3"
 frozendict = "^1.2"
+pydantic = "^1.7.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
