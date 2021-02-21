@@ -1,9 +1,8 @@
 """Default WM configuration."""
-
 import subprocess
+import sys
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from typing import Any
 
 from frozendict import frozendict
 from loguru import logger
@@ -11,17 +10,9 @@ from Xlib import X
 
 from s3wm.layouts.default_tile import DefaultTile
 from s3wm_core.key_combination import KeyCombination
+from s3wm_core.keymap import kill_wm
 
 FRAME_WIDTH = 10
-
-
-def quit_wm(wm: Any) -> None:
-    """Close WM process.
-
-    :param wm: an S3WM instance. (Used Any to avoid circular deps)
-    """
-    wm.display.close()
-    exit(0)  # noqa: WPS421
 
 
 def startup() -> None:
@@ -32,7 +23,6 @@ def startup() -> None:
     Actions defined here will be called at WindowManager startup.
     """
     subprocess.Popen("nitrogen --restore", shell=True)
-    subprocess.Popen("systemctl --user start music_bg.service", shell=True)
 
 
 # Default layout mode.
@@ -50,7 +40,7 @@ combinations = [
     KeyCombination(
         modifiers=KeyCombination.default_mod_key | X.ShiftMask,
         key="q",
-        action=quit_wm,
+        action=kill_wm,
     ),
     KeyCombination(
         modifiers=KeyCombination.default_mod_key,
@@ -77,11 +67,19 @@ EVENT_HANDLER_MAP = frozendict(
     },
 )
 
-try:  # noqa: WPS229
-    conf_path = Path("~/.s3wm_conf.py").expanduser()
-    spec = spec_from_file_location("user_config", str(conf_path))
-    user_config = module_from_spec(spec)
+module_name = "user_config"
+conf_path = Path("~/.s3wm_conf.py").expanduser()
 
+try:  # noqa: WPS229
+    if not conf_path.exists():
+        raise ImportError
+    spec = spec_from_file_location("user_config", str(conf_path))
+    module = module_from_spec(spec)
+    if not spec.loader:
+        raise ImportError
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)  # type: ignore
     from user_config import *  # noqa: F401, F403, WPS347, WPS433
-except ImportError:
+except ImportError as exc:
+    logger.exception(exc)
     logger.error("Can't import user config. Initialized with default.")

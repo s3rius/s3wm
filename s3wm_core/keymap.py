@@ -6,9 +6,17 @@ from Xlib.display import Display
 from Xlib.protocol.event import KeyPress
 
 from s3wm_core.key_combination import KeyCombination
-from s3wm_core.wm_config import combinations
 
 keycode_mapping: Dict[Tuple[int, int], KeyCombination] = {}
+
+
+def kill_wm(wm: Any) -> None:
+    """Close WM process.
+
+    :param wm: an S3WM instance. (Used Any to avoid circular deps)
+    """
+    wm.display.close()
+    exit(0)  # noqa: WPS421
 
 
 def init_keymap(display: Display) -> None:
@@ -19,6 +27,8 @@ def init_keymap(display: Display) -> None:
 
     :param display: Used to manipulate keysym to keycode transitions.
     """
+    from s3wm_core.wm_config import combinations  # noqa: WPS433
+
     for button in {1, 3}:  # noqa: WPS335
         display.screen().root.grab_button(
             button=button,

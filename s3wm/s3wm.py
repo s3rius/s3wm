@@ -5,7 +5,6 @@ from Xlib import X
 from Xlib.display import Display
 from Xlib.protocol.event import DestroyNotify, KeyPress, MapRequest
 
-from s3wm_core import wm_config
 from s3wm_core.keymap import get_key_action, init_keymap
 from s3wm_core.s3window import S3window
 
@@ -26,8 +25,10 @@ class S3WM:
         establishing connection to the display
         and initialization of a chosen layout.
         """
-        self.active_window = None
+        from s3wm_core import wm_config  # noqa: WPS433
+
         self.display = Display()
+        self.config = wm_config
         self.layout = wm_config.layout(self)
 
     def handle_map(self, map_event: MapRequest) -> None:
@@ -111,7 +112,7 @@ class S3WM:
         display = self.display
         init_keymap(display)
         startup = getattr(
-            wm_config,
+            self.config,
             "startup",
             lambda: logger.debug("No startup actions found"),
         )
@@ -121,9 +122,9 @@ class S3WM:
         while True:  # noqa: WPS457
             event = display.next_event()
             logger.debug(event.__class__)
-            if event.type in wm_config.EVENT_HANDLER_MAP:
+            if event.type in self.config.EVENT_HANDLER_MAP:
                 logger.debug(f"Handling event: {event.type}")
-                handler_name = wm_config.EVENT_HANDLER_MAP.get(event.type)
+                handler_name = self.config.EVENT_HANDLER_MAP.get(event.type)
                 if not handler_name:
                     continue
                 key_handler = getattr(self, handler_name)
