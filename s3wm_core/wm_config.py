@@ -7,9 +7,10 @@ from typing import Any
 
 from frozendict import frozendict
 from loguru import logger
-from src.layouts.default_tile import DefaultTile
-from src.s3wm_types import KeyCombination
 from Xlib import X
+
+from s3wm.layouts.default_tile import DefaultTile
+from s3wm_core.key_combination import KeyCombination
 
 FRAME_WIDTH = 10
 
@@ -44,7 +45,7 @@ combinations = [
     KeyCombination(
         modifiers=KeyCombination.default_mod_key | X.ShiftMask,
         key="Return",
-        action="$TERM",
+        action="xterm",
     ),
     KeyCombination(
         modifiers=KeyCombination.default_mod_key | X.ShiftMask,

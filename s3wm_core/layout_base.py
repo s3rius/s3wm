@@ -2,27 +2,24 @@ from abc import ABC, abstractmethod
 from typing import Any, List
 
 from Xlib.protocol.display import Screen
-from Xlib.xobject.drawable import Window
 
 from s3wm_core.key_combination import KeyCombination
+from s3wm_core.s3window import S3window
 
 
 class AbstractLayoutManager(ABC):
     """Base class for Layout managers."""
 
-    gaps = 5
-
     def __init__(self, _wm: Any) -> None:
-        self.current_tag = 1
+        """Do whatever you want with data."""
 
     @abstractmethod
-    def add_window(self, window: Window, screen: Screen) -> None:
+    def add_window(self, window: S3window) -> None:
         """
         Add window to Layout manager.
 
         This method must put window under control of current LayoutManager.
         :param window: added window
-        :param screen: current screen
         """
 
     @abstractmethod
@@ -34,12 +31,11 @@ class AbstractLayoutManager(ABC):
         """
 
     @abstractmethod
-    def remove_window(self, window: Window, screen: Screen) -> None:
+    def remove_window(self, window: S3window) -> None:
         """
         Remove window from LayoutManager.
 
         :param window: window that was removed.
-        :param screen: screen
         """
 
     @classmethod

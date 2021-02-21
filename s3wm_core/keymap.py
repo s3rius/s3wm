@@ -1,12 +1,12 @@
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from loguru import logger
-from src.config import combinations
 from Xlib import X
 from Xlib.display import Display
 from Xlib.protocol.event import KeyPress
 
 from s3wm_core.key_combination import KeyCombination
+from s3wm_core.wm_config import combinations
 
 keycode_mapping: Dict[Tuple[int, int], KeyCombination] = {}
 
@@ -19,7 +19,7 @@ def init_keymap(display: Display) -> None:
 
     :param display: Used to manipulate keysym to keycode transitions.
     """
-    for button in set({1, 3}):
+    for button in {1, 3}:  # noqa: WPS335
         display.screen().root.grab_button(
             button=button,
             modifiers=X.Mod1Mask,

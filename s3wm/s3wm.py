@@ -1,12 +1,13 @@
 from subprocess import Popen
 
 from loguru import logger
-from src.keymap import get_key_action, init_keymap
 from Xlib import X
 from Xlib.display import Display
 from Xlib.protocol.event import DestroyNotify, KeyPress, MapRequest
 
-from s3wm import wm_config
+from s3wm_core import wm_config
+from s3wm_core.keymap import get_key_action, init_keymap
+from s3wm_core.s3window import S3window
 
 
 class S3WM:
@@ -40,11 +41,11 @@ class S3WM:
         :param map_event: X11 event for mapping
         """
         logger.debug("Mapping window")
-        window = map_event.window
+        window = S3window(map_event.window, self.display.screen())
         window.map()
-        self.layout.add_window(window, self.display.screen())
+        self.layout.add_window(window)
         mask = X.EnterWindowMask | X.LeaveWindowMask
-        window.change_attributes(event_mask=mask)
+        window.window.change_attributes(event_mask=mask)
 
     def handle_keypress(self, key_event: KeyPress) -> None:
         """
@@ -72,7 +73,7 @@ class S3WM:
         This function will be triggered when window is destroyed.
         :param destroy_event: X11 event.
         """
-        self.layout.remove_window(destroy_event.window, self.display.screen())
+        self.layout.remove_window(S3window(destroy_event.window, self.display.screen()))
 
     def catch_events(self) -> None:
         """

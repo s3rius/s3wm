@@ -3,7 +3,8 @@ import subprocess
 from typing import Optional, Tuple
 
 from loguru import logger
-from Xlib.protocol.display import Screen, Window
+from Xlib.protocol.display import Screen
+from Xlib.xobject.drawable import Window
 
 from s3wm_core.x_models import WindowGeometry
 
