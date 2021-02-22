@@ -17,3 +17,15 @@ class WindowGeometry(BaseModel):
         """Model config."""
 
         orm_mode = True
+
+
+class ScreenGeometry(BaseModel):
+    """Screen geometry parameters."""
+
+    width: int
+    height: int
+
+    class Config(BaseConfig):
+        """Model config."""
+
+        orm_mode = True

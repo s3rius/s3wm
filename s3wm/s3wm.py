@@ -4,8 +4,10 @@ from loguru import logger
 from Xlib import X
 from Xlib.display import Display
 from Xlib.protocol.event import DestroyNotify, KeyPress, MapRequest
+from Xlib.Xcursorfont import left_ptr
 
 from s3wm_core.keymap import get_key_action, init_keymap
+from s3wm_core.s3screen import S3screen
 from s3wm_core.s3window import S3window
 
 
@@ -30,6 +32,15 @@ class S3WM:
         self.display = Display()
         self.config = wm_config
         self.layout = wm_config.layout(self)
+        font = self.display.open_font("cursor")
+        cursor = font.create_glyph_cursor(  # noqa: WPS317
+            font,
+            left_ptr,
+            left_ptr + 1,
+            (0, 0, 0),
+            (65535, 65535, 65535),
+        )
+        self.display.screen().root.change_attributes(cursor=cursor)
 
     def handle_map(self, map_event: MapRequest) -> None:
         """
@@ -42,7 +53,7 @@ class S3WM:
         :param map_event: X11 event for mapping
         """
         logger.debug("Mapping window")
-        window = S3window(map_event.window, self.display.screen())
+        window = S3window(map_event.window, S3screen(self.display.screen()))
         window.map()
         self.layout.add_window(window)
         mask = X.EnterWindowMask | X.LeaveWindowMask
@@ -74,7 +85,9 @@ class S3WM:
         This function will be triggered when window is destroyed.
         :param destroy_event: X11 event.
         """
-        self.layout.remove_window(S3window(destroy_event.window, self.display.screen()))
+        self.layout.remove_window(
+            S3window(destroy_event.window, S3screen(self.display.screen())),
+        )
 
     def catch_events(self) -> None:
         """
