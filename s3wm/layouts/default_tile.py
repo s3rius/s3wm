@@ -2,8 +2,13 @@ from collections import defaultdict
 from typing import DefaultDict, List
 
 from Xlib.protocol.display import Screen
+from Xlib.X import ShiftMask
 
-from s3wm.layouts.key_bindings import change_tab, move_focus
+from s3wm.layouts.key_bindings import (
+    change_tab,
+    move_focus,
+    move_window_to_tab,
+)
 from s3wm.layouts.tab import Tab
 from s3wm.s3wm import S3WM
 from s3wm_core.key_combination import KeyCombination
@@ -74,6 +79,15 @@ class DefaultTile(AbstractLayoutManager):
         """Focus previous window on the current tab."""
         self.tabs[self.current_tab].focus_prev()
 
+    def move_focused_window(self, tab_index: int) -> None:
+        """
+        Move currently focused window to another tab.
+
+        :param tab_index: to which tab do we need to move.
+        """
+        window = self.tabs[self.current_tab].pop_focused_window()
+        self.tabs[tab_index].add_window(window)
+
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
         """Get Keys specific to your layout.
@@ -90,6 +104,13 @@ class DefaultTile(AbstractLayoutManager):
                     modifiers=KeyCombination.default_mod_key,
                     key=str(index),
                     action=change_tab(index - 1),
+                ),
+            )
+            keys.append(
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key | ShiftMask,
+                    key=str(index),
+                    action=move_window_to_tab(index - 1),
                 ),
             )
 

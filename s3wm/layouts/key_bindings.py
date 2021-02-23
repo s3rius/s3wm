@@ -44,3 +44,22 @@ def move_focus(prev: bool) -> Callable[[S3WM], None]:
             wm.layout.focus_next()
 
     return change_focus
+
+
+def move_window_to_tab(tab_index: int) -> Callable[[S3WM], None]:
+    """
+    Generate function to move focused window.
+
+    :param tab_index: tab on which to move window.
+    :returns: function to move window.
+    """
+
+    def move_window(wm: S3WM) -> None:
+        """
+        Move currently focused window to another tab.
+
+        :param wm: window manager.
+        """
+        wm.layout.move_focused_window(tab_index)
+
+    return move_window

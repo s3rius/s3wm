@@ -45,6 +45,19 @@ class Tab:
         self.focused_window = self.windows[index]
         self.focused_window.focus()
 
+    def pop_focused_window(self) -> S3window:
+        """
+        Pop focused window from tab.
+
+        :return: previously focused window.
+        """
+        index = self.focused_index()
+        target_window = self.windows.pop(index)
+        target_window.unmap()
+        self.focused_window = None
+        self.update_layout()
+        return target_window
+
     def focus_next(self) -> None:
         """Focus on a next window in windows stack."""
         if not self.windows:
