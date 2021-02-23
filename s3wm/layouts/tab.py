@@ -36,7 +36,6 @@ class Tab:
 
     def focus_prev(self) -> None:
         """Focus on a previous window in array."""
-        self.focused_window = None
         if not self.windows:
             return
         index = self.focused_index()
@@ -48,7 +47,6 @@ class Tab:
 
     def focus_next(self) -> None:
         """Focus on a next window in windows stack."""
-        self.focused_window = None
         if not self.windows:
             return
         index = self.focused_index()
