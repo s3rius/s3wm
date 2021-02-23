@@ -8,7 +8,6 @@ class WindowGeometry(BaseModel):
     y: int  # noqa: WPS111
     width: int
     height: int
-    root: int
     border_width: int
     depth: int
     sequence_number: int

@@ -40,6 +40,7 @@ def get_window_geometry(window: Window) -> Optional[WindowGeometry]:
     try:
         return WindowGeometry.from_orm(window.get_geometry())
     except Exception as exc:
+        logger.exception(exc)
         logger.error(f"Can't get window geometry. Cause: {exc}")
         return None
 
@@ -49,9 +50,9 @@ def get_screen_size(screen: Screen) -> Tuple[int, int]:
     Get current screen size.
 
     Return the dimension (WIDTH, HEIGHT) of the current screen as a
-    tuple in pixels.  If xrandr command exsits and either DP (DisplayPort)
-    or HDMI output is active, return its dimensionn instead of the screen
-    size of the current X11 display.
+    tuple in pixels.  If xrandr command exists and either DP (DisplayPort)
+    or HDMI output is active, return its dimensions instead of the current X11 display
+    size.
 
     :param screen: current screen.
     :returns: Width and height of current screen.

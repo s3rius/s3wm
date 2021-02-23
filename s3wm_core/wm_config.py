@@ -27,7 +27,7 @@ def startup() -> None:
 
 # Default layout mode.
 layout = DefaultTile
-layout.gaps = 20
+layout.gaps = 10
 
 # Keyboard global combinations.
 # All combinations for layoutManager
@@ -80,6 +80,5 @@ try:  # noqa: WPS229
     sys.modules[module_name] = module
     spec.loader.exec_module(module)  # type: ignore
     from user_config import *  # noqa: F401, F403, WPS347, WPS433
-except ImportError as exc:
-    logger.exception(exc)
+except ImportError:
     logger.error("Can't import user config. Initialized with default.")

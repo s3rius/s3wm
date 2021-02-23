@@ -1,8 +1,9 @@
 from collections import defaultdict
-from typing import Callable, DefaultDict, List
+from typing import DefaultDict, List
 
 from Xlib.protocol.display import Screen
 
+from s3wm.layouts.key_bindings import change_tab, move_focus
 from s3wm.layouts.tab import Tab
 from s3wm.s3wm import S3WM
 from s3wm_core.key_combination import KeyCombination
@@ -10,27 +11,10 @@ from s3wm_core.layout_base import AbstractLayoutManager
 from s3wm_core.s3window import S3window
 
 
-def change_tab(tab_index: int) -> Callable[[S3WM], None]:
-    """
-    Create function to change tab on layout.
-
-    :param tab_index: index of a tab.
-    :return: function to change tab on layout.
-    """
-
-    def change_layout_tab(wm: S3WM) -> None:
-        """
-        Actually change layout's tab.
-
-        :param wm: WindowManager.
-        """
-        wm.layout.change_tab(tab_index)
-
-    return change_layout_tab
-
-
 class DefaultTile(AbstractLayoutManager):
     """Default tile manager."""
+
+    gaps: int = 0
 
     def __init__(self, wm: S3WM) -> None:
         """
@@ -39,6 +23,7 @@ class DefaultTile(AbstractLayoutManager):
         :param wm: S3WM instance.
         """
         super().__init__(wm)
+        Tab.gaps = self.gaps
         self.tabs: DefaultDict[int, Tab] = defaultdict(Tab)
         self.current_tab = 0
         self.tabs[self.current_tab].set_focus()
@@ -81,6 +66,14 @@ class DefaultTile(AbstractLayoutManager):
         self.current_tab = tab_number
         self.tabs[self.current_tab].set_focus()
 
+    def focus_next(self) -> None:
+        """Focus next window on the current tab."""
+        self.tabs[self.current_tab].focus_next()
+
+    def focus_prev(self) -> None:
+        """Focus previous window on the current tab."""
+        self.tabs[self.current_tab].focus_prev()
+
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
         """Get Keys specific to your layout.
@@ -99,5 +92,20 @@ class DefaultTile(AbstractLayoutManager):
                     action=change_tab(index - 1),
                 ),
             )
+
+        keys.extend(
+            [
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="j",
+                    action=move_focus(prev=False),
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="k",
+                    action=move_focus(prev=True),
+                ),
+            ],
+        )
 
         return keys

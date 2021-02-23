@@ -3,7 +3,7 @@
 🛠️⚙️This is a WIP project. Don't beleive in README ⚙️🛠️
 
 
-This project is a yet another `tilling layout manager`.
+This project is a yet another `Window manager`.
 
 Main Idea behind this project is `modularity` and
 window manager `configuration in Python`.
