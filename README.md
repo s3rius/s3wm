@@ -1,3 +1,7 @@
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/s3rius/s3wm/Release%20s3wm?style=for-the-badge)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/s3wm?style=for-the-badge)](https://pypi.org/project/s3wm)
+[![PyPI](https://img.shields.io/pypi/v/s3wm?style=for-the-badge)](https://pypi.org/project/s3wm)
+
 # S3WM
 
 🛠️⚙️This is a WIP project. Don't beleive in README ⚙️🛠️
