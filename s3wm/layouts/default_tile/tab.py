@@ -58,12 +58,14 @@ class Tab:
         self.focused_window = self.windows[index - 1]
         self.focused_window.focus()
 
-    def pop_focused_window(self) -> S3window:
+    def pop_focused_window(self) -> Optional[S3window]:
         """
         Pop focused window from tab.
 
         :return: previously focused window.
         """
+        if not self.windows:
+            return None
         index = self.focused_index()
         target_window = self.windows.pop(index)
         target_window.unmap()
@@ -136,7 +138,7 @@ class Tab:
             return
         height_percent = 100 // (len(self.windows) - 1)
         windows_x = main_geom.x + main_geom.width + self.gaps
-        windows_y = self.gaps
+        windows_y = 0
         for window in reversed(self.windows):
             if window == self.focused_window:
                 continue
@@ -149,8 +151,8 @@ class Tab:
             if not win_geom:
                 continue
             window.resize(
-                width=win_geom.width - self.gaps,
-                height=win_geom.height - self.gaps,
+                width=win_geom.width - (self.gaps * 2),
+                height=win_geom.height - (self.gaps * 2),
             )
-            window.move(x=windows_x, y=windows_y)
+            window.move(x=windows_x, y=windows_y + self.gaps)
             windows_y += win_geom.height

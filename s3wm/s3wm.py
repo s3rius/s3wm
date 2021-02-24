@@ -131,8 +131,8 @@ class S3WM:
         """
         mask = (
             X.SubstructureRedirectMask
+            | X.StructureNotifyMask
             | X.UnmapNotify
-            | X.SubstructureNotifyMask
             | X.EnterWindowMask
             | X.LeaveWindowMask
             | X.FocusChangeMask
@@ -167,7 +167,7 @@ class S3WM:
                 return
             key_handler = getattr(self, handler_name)
             if key_handler:
-                logger.debug(f"Handling event: {event.type}")
+                logger.error(f"Handling event: {event.__class__}")
                 try:
                     key_handler(event)
                 except KeyboardInterrupt:  # noqa: WPS329
@@ -175,6 +175,21 @@ class S3WM:
                 except Exception as exc:
                     logger.exception(exc)
                 logger.debug("event handled")
+
+    def reload_windows(self) -> None:
+        """Query root window for children and render them if we can."""
+        response = self.display.screen().root.query_tree()
+        for window in response.children:
+            attrs = window.get_attributes()
+            if attrs.map_state == X.IsViewable:
+                managed_window = S3window(
+                    window,
+                    S3screen(self.display.screen()),
+                )
+                managed_window.map()
+                self.layout.add_window(managed_window)
+                mask = X.EnterWindowMask | X.LeaveWindowMask
+                window.change_attributes(event_mask=mask)
 
     def run(self) -> None:
         """Runs window manager."""
@@ -188,5 +203,6 @@ class S3WM:
         self.catch_events()
         self.setup_root()
         startup()
+        self.reload_windows()
         while True:  # noqa: WPS457
             self.handle_next_event()

@@ -11,7 +11,13 @@ from s3wm_core.x_models import WindowGeometry
 class S3window(object):
     """Main window abstraction for S3WM."""
 
-    def __init__(self, window: Window, screen: S3screen):
+    def __init__(
+        self,
+        window: Window,
+        screen: S3screen,
+        parent: Optional[Window] = None,
+    ):
+        self.parent = parent
         self.window = window
         self.screen = screen
 
@@ -85,7 +91,7 @@ class S3window(object):
 
     def destroy(self) -> None:
         """Kill window from X11."""
-        self.window.kill_client()
+        self.window.destroy()
 
     def __str__(self) -> str:
         return f"<S3Window {self.id}>"

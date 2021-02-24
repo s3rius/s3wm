@@ -1,6 +1,7 @@
 from typing import Callable
 
 from s3wm.s3wm import S3WM
+from s3wm_core import S3screen
 
 
 def change_tab(tab_index: int) -> Callable[[S3WM], None]:
@@ -72,3 +73,25 @@ def kill_focused_window(wm: S3WM) -> None:
     :param wm: window manager.
     """
     wm.layout.kill_focused_window()
+
+
+def change_gaps(delta: int) -> Callable[[S3WM], None]:
+    """
+    Change gaps between windows.
+
+    :param delta: delta to add to current gaps value.
+    :returns: function to change gaps.
+    """
+
+    def gap_changer(wm: S3WM) -> None:
+        """
+        Actual function to update gaps.
+
+        :param wm: window manager.
+        """
+        wm.layout.tab_class.gaps += delta
+        if wm.layout.tab_class.gaps < 0:
+            wm.layout.tab_class.gaps = 0
+        wm.layout.update_layout(S3screen(wm.display.screen()))
+
+    return gap_changer

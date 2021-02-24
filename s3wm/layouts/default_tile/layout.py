@@ -1,10 +1,11 @@
 from collections import defaultdict
-from typing import DefaultDict, List
+from typing import Any, DefaultDict, List
 
 from Xlib.protocol.display import Screen
 from Xlib.X import ShiftMask
 
 from s3wm.layouts.default_tile.key_bindings import (
+    change_gaps,
     change_tab,
     kill_focused_window,
     move_focus,
@@ -21,6 +22,7 @@ class DefaultTile(AbstractLayoutManager):
     """Default tile manager."""
 
     gaps: int = 0
+    tab_class = Tab
 
     def __init__(self, wm: S3WM) -> None:
         """
@@ -29,8 +31,8 @@ class DefaultTile(AbstractLayoutManager):
         :param wm: S3WM instance.
         """
         super().__init__(wm)
-        Tab.gaps = self.gaps
-        self.tabs: DefaultDict[int, Tab] = defaultdict(Tab)
+        self.tab_class.gaps = self.gaps
+        self.tabs: DefaultDict[int, Any] = defaultdict(self.tab_class)
         self.current_tab = 0
         self.tabs[self.current_tab].focus()
 
@@ -41,7 +43,6 @@ class DefaultTile(AbstractLayoutManager):
         :param window: new window.
         """
         self.tabs[self.current_tab].add_window(window)
-        window.focus()
 
     def update_layout(self, screen: Screen) -> None:
         """
@@ -92,7 +93,8 @@ class DefaultTile(AbstractLayoutManager):
     def kill_focused_window(self) -> None:
         """Kill focused window."""
         window = self.tabs[self.current_tab].pop_focused_window()
-        window.destroy()
+        if window:
+            window.destroy()
 
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
@@ -136,6 +138,16 @@ class DefaultTile(AbstractLayoutManager):
                     modifiers=KeyCombination.default_mod_key | ShiftMask,
                     key="c",
                     action=kill_focused_window,
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="minus",
+                    action=change_gaps(-2),
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="plus",
+                    action=change_gaps(2),
                 ),
             ],
         )
