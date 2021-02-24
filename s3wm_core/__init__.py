@@ -10,7 +10,7 @@ from s3wm_core.s3screen import S3screen
 from s3wm_core.s3window import S3window
 from s3wm_core.x_models import ScreenGeometry, WindowGeometry
 
-__all__ = [  # noqa: WPS410
+__all__ = [
     "kill_wm",
     "S3window",
     "S3screen",

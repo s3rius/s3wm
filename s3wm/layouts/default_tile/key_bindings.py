@@ -63,3 +63,12 @@ def move_window_to_tab(tab_index: int) -> Callable[[S3WM], None]:
         wm.layout.move_focused_window(tab_index)
 
     return move_window
+
+
+def kill_focused_window(wm: S3WM) -> None:
+    """
+    Kill window that user currently focused at.
+
+    :param wm: window manager.
+    """
+    wm.layout.kill_focused_window()

@@ -83,10 +83,9 @@ class S3window(object):
             y=y,
         )
 
-    def kill(self) -> None:
-        """Kill window and unmap it from X11."""
+    def destroy(self) -> None:
+        """Kill window from X11."""
         self.window.kill_client()
-        self.unmap()
 
     def __str__(self) -> str:
         return f"<S3Window {self.id}>"

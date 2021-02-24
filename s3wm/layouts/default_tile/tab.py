@@ -14,7 +14,7 @@ class Tab:
         self.windows: List[S3window] = []
         self.focused_window: Optional[S3window] = None
 
-    def set_focus(self) -> None:
+    def focus(self) -> None:
         """Show all windows from tab and focus on the last one."""
         for window in self.windows:
             window.map()
@@ -22,6 +22,11 @@ class Tab:
         self.focused_window = None
         if self.windows:
             self.windows[-1].focus()
+
+    def lose_focus(self) -> None:
+        """Hide all windows from the screen."""
+        for window in self.windows:
+            window.unmap()
 
     def focused_index(self) -> int:
         """
@@ -45,6 +50,14 @@ class Tab:
         self.focused_window = self.windows[index]
         self.focused_window.focus()
 
+    def focus_next(self) -> None:
+        """Focus on a next window in windows stack."""
+        if not self.windows:
+            return
+        index = self.focused_index()
+        self.focused_window = self.windows[index - 1]
+        self.focused_window.focus()
+
     def pop_focused_window(self) -> S3window:
         """
         Pop focused window from tab.
@@ -57,19 +70,6 @@ class Tab:
         self.focused_window = None
         self.update_layout()
         return target_window
-
-    def focus_next(self) -> None:
-        """Focus on a next window in windows stack."""
-        if not self.windows:
-            return
-        index = self.focused_index()
-        self.focused_window = self.windows[index - 1]
-        self.focused_window.focus()
-
-    def lose_focus(self) -> None:
-        """Hide all windows from the screen."""
-        for window in self.windows:
-            window.unmap()
 
     def add_window(self, window: S3window) -> None:
         """
@@ -101,7 +101,7 @@ class Tab:
             self.focused_window = self.windows[-1]
         self.update_layout()
 
-    def update_layout(self) -> None:  # noqa: C901, WPS210, WPS231
+    def update_layout(self) -> None:  # noqa: C901, WPS210, WPS231, WPS213
         """Place all windows on layout nicely."""
         logger.debug("Updating layout")
         logger.info(self.gaps)
@@ -115,16 +115,14 @@ class Tab:
             main_window_width = 100
             main_width_gaps = 2
 
-        if not self.focused_window:
-            self.focused_window = self.windows[-1]
-
-        main_window = self.focused_window
+        main_window = self.windows[-1]
         main_window.resize(width=main_window_width, height=100, percents=True)
         main_window.move(
             x=self.gaps,
             y=self.gaps,
         )
         main_geom = main_window.geom
+        main_window.focus()
         if not main_geom:
             return
         main_window.resize(

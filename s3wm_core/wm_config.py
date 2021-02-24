@@ -1,18 +1,13 @@
 """Default WM configuration."""
-import subprocess
 import sys
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
-from frozendict import frozendict
 from loguru import logger
 from Xlib import X
 
-from s3wm.layouts.default_tile import DefaultTile
-from s3wm_core.key_combination import KeyCombination
-from s3wm_core.keymap import kill_wm
-
-FRAME_WIDTH = 10
+from s3wm.layouts import DefaultTile
+from s3wm_core import KeyCombination, kill_wm
 
 
 def startup() -> None:
@@ -22,7 +17,7 @@ def startup() -> None:
     Function called on startup.
     Actions defined here will be called at WindowManager startup.
     """
-    subprocess.Popen("nitrogen --restore", shell=True)
+    logger.debug("Calling startup!")
 
 
 # Default layout mode.
@@ -51,29 +46,14 @@ combinations = [
 ]
 
 
-EVENT_HANDLER_MAP = frozendict(
-    {
-        X.KeyPress: "handle_keypress",
-        X.ButtonPress: None,
-        X.MotionNotify: None,
-        X.ButtonRelease: None,
-        X.MapRequest: "handle_map",
-        X.ConfigureRequest: None,
-        X.UnmapNotify: None,
-        X.EnterNotify: None,
-        X.LeaveNotify: None,
-        X.DestroyNotify: "handle_destroy",
-        X.MapNotify: None,
-    },
-)
-
+# Importing user_config bt absolute path.
 module_name = "user_config"
 conf_path = Path("~/.s3wm_conf.py").expanduser()
 
 try:  # noqa: WPS229
     if not conf_path.exists():
         raise ImportError
-    spec = spec_from_file_location("user_config", str(conf_path))
+    spec = spec_from_file_location(module_name, str(conf_path))
     module = module_from_spec(spec)
     if not spec.loader:
         raise ImportError

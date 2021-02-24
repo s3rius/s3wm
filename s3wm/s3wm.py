@@ -1,14 +1,36 @@
 from subprocess import Popen
 
+from frozendict import frozendict
 from loguru import logger
 from Xlib import X
 from Xlib.display import Display
-from Xlib.protocol.event import DestroyNotify, KeyPress, MapRequest
+from Xlib.protocol.event import (
+    DestroyNotify,
+    KeyPress,
+    MapRequest,
+    UnmapNotify,
+)
 from Xlib.Xcursorfont import left_ptr
 
 from s3wm_core.keymap import get_key_action, init_keymap
 from s3wm_core.s3screen import S3screen
 from s3wm_core.s3window import S3window
+
+EVENT_HANDLER_MAP = frozendict(
+    {
+        X.KeyPress: "handle_keypress",
+        X.ButtonPress: None,
+        X.MotionNotify: None,
+        X.ButtonRelease: None,
+        X.MapRequest: "handle_map",
+        X.ConfigureRequest: None,
+        X.UnmapNotify: "handle_unmap",
+        X.EnterNotify: None,
+        X.LeaveNotify: None,
+        X.DestroyNotify: "handle_destroy",
+        X.MapNotify: None,
+    },
+)
 
 
 class S3WM:
@@ -89,6 +111,17 @@ class S3WM:
             S3window(destroy_event.window, S3screen(self.display.screen())),
         )
 
+    def handle_unmap(self, unmap_event: UnmapNotify) -> None:
+        """
+        Called to unmap window and remove it from the screen.
+
+        This function will be triggered when window is unmapped.
+        :param unmap_event: X11 event.
+        """
+        self.layout.remove_window(
+            S3window(unmap_event.window, S3screen(self.display.screen())),
+        )
+
     def catch_events(self) -> None:
         """
         Setup event catching.
@@ -98,6 +131,7 @@ class S3WM:
         """
         mask = (
             X.SubstructureRedirectMask
+            | X.UnmapNotify
             | X.SubstructureNotifyMask
             | X.EnterWindowMask
             | X.LeaveWindowMask
@@ -120,6 +154,28 @@ class S3WM:
         root_window.change_text_property(wm_name, utf_string, "LG3D")
         self.display.sync()
 
+    def handle_next_event(self) -> None:  # noqa: C901, WPS231
+        """
+        Request next event from X11 and handle it.
+
+        :raises KeyboardInterrupt: if something has enterrupted the main process.
+        """
+        event = self.display.next_event()
+        if event.type in EVENT_HANDLER_MAP:
+            handler_name = EVENT_HANDLER_MAP.get(event.type)
+            if not handler_name:
+                return
+            key_handler = getattr(self, handler_name)
+            if key_handler:
+                logger.debug(f"Handling event: {event.type}")
+                try:
+                    key_handler(event)
+                except KeyboardInterrupt:  # noqa: WPS329
+                    raise
+                except Exception as exc:
+                    logger.exception(exc)
+                logger.debug("event handled")
+
     def run(self) -> None:
         """Runs window manager."""
         display = self.display
@@ -133,14 +189,4 @@ class S3WM:
         self.setup_root()
         startup()
         while True:  # noqa: WPS457
-            event = display.next_event()
-            logger.debug(event.__class__)
-            if event.type in self.config.EVENT_HANDLER_MAP:
-                logger.debug(f"Handling event: {event.type}")
-                handler_name = self.config.EVENT_HANDLER_MAP.get(event.type)
-                if not handler_name:
-                    continue
-                key_handler = getattr(self, handler_name)
-                if key_handler:
-                    key_handler(event)
-                    logger.debug("event handled")
+            self.handle_next_event()

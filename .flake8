@@ -106,6 +106,8 @@ per-file-ignores =
   F401,
   ; ignore import with wildcard
   F403,
+  ; Found wrong metadata variable
+  WPS410,
 
   ; conftest file
   conftest.py:

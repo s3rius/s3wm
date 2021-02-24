@@ -14,6 +14,10 @@ window manager `configuration in Python`.
 
 You can even `bind a python function` to some key combination.
 
+## Configuration
+Main configuration file must be located in `$HOME/.s3wm_conf.py`.
+S3WM configuration examples can be found in examples folder.
+
 ## How to Run/test
 
 ```bash
