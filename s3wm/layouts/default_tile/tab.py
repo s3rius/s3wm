@@ -116,6 +116,29 @@ class Tab:
         self.main_window_size = max(10, self.main_window_size)
         self.update_layout()
 
+    def move_window_forward(self) -> None:
+        """Move focused window backward in stack."""
+        if not self.windows:
+            return
+        index = self.focused_index()
+        second_index = index + 1
+        if second_index >= len(self.windows):
+            second_index = 0
+        tmp = self.windows[index]
+        self.windows[index] = self.windows[second_index]
+        self.windows[second_index] = tmp
+        self.update_layout()
+
+    def move_window_backward(self) -> None:
+        """Move focused window forward in stack."""
+        if not self.windows:
+            return
+        index = self.focused_index()
+        tmp = self.windows[index]
+        self.windows[index] = self.windows[index - 1]
+        self.windows[index - 1] = tmp
+        self.update_layout()
+
     def update_layout(self) -> None:  # noqa: C901, WPS210, WPS231, WPS213
         """Place all windows on layout nicely."""
         logger.debug("Updating layout")

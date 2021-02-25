@@ -9,6 +9,8 @@ from s3wm.layouts.default_tile.key_bindings import (
     change_window_size,
     kill_focused_window,
     move_focus,
+    move_window_backward,
+    move_window_forward,
     move_window_to_tab,
 )
 from s3wm.layouts.default_tile.tab import Tab
@@ -106,6 +108,14 @@ class DefaultTile(AbstractLayoutManager):
         """
         self.tabs[self.current_tab].change_main_window_size(delta)
 
+    def move_window_forward(self) -> None:
+        """Move currently focused window forward."""
+        self.tabs[self.current_tab].move_window_forward()
+
+    def move_window_backward(self) -> None:
+        """Move currently focused window backward."""
+        self.tabs[self.current_tab].move_window_backward()
+
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
         """Get Keys specific to your layout.
@@ -143,6 +153,16 @@ class DefaultTile(AbstractLayoutManager):
                     modifiers=KeyCombination.default_mod_key,
                     key="k",
                     action=move_focus(prev=True),
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key | ShiftMask,
+                    key="j",
+                    action=move_window_backward,
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key | ShiftMask,
+                    key="k",
+                    action=move_window_forward,
                 ),
                 KeyCombination(
                     modifiers=KeyCombination.default_mod_key | ShiftMask,

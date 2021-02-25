@@ -55,7 +55,7 @@ def parse_arguments() -> Namespace:
         dest="log_level",
         type=Loglevel.from_string,
         choices=list(Loglevel),
-        default=Loglevel.INFO.value,
+        default=Loglevel.INFO,
     )
     return parser.parse_args()
 

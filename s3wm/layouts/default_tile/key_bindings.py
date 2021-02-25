@@ -110,3 +110,21 @@ def change_window_size(delta: int) -> Callable[[S3WM], None]:
         wm.layout.change_main_window_size(delta)
 
     return size_changer
+
+
+def move_window_forward(wm: S3WM) -> None:
+    """
+    Move focused window forward on current tab.
+
+    :param wm: window manager.
+    """
+    wm.layout.move_window_forward()
+
+
+def move_window_backward(wm: S3WM) -> None:
+    """
+    Move focused window backward on current tab.
+
+    :param wm: window manager.
+    """
+    wm.layout.move_window_backward()

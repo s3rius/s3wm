@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "s3wm"
-version = "0.1.6"
+version = "0.2.0-alpha.0"
 description = "Simple Window manager."
 authors = ["Pavel Kirilin <win10@list.ru>"]
 readme = "README.md"
