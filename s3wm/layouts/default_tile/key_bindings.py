@@ -1,7 +1,6 @@
 from typing import Callable
 
 from s3wm.s3wm import S3WM
-from s3wm_core import S3screen
 
 
 def change_tab(tab_index: int) -> Callable[[S3WM], None]:
@@ -89,9 +88,25 @@ def change_gaps(delta: int) -> Callable[[S3WM], None]:
 
         :param wm: window manager.
         """
-        wm.layout.tab_class.gaps += delta
-        if wm.layout.tab_class.gaps < 0:
-            wm.layout.tab_class.gaps = 0
-        wm.layout.update_layout(S3screen(wm.display.screen()))
+        wm.layout.change_gap_value(delta)
 
     return gap_changer
+
+
+def change_window_size(delta: int) -> Callable[[S3WM], None]:
+    """
+    Function to generate function to change window size.
+
+    :param delta: size delta.
+    :returns: function to change window size.
+    """
+
+    def size_changer(wm: S3WM) -> None:
+        """
+        Actually change size.
+
+        :param wm: window manager.
+        """
+        wm.layout.change_main_window_size(delta)
+
+    return size_changer

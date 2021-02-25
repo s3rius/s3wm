@@ -6,7 +6,9 @@ from Xlib import X
 from Xlib.display import Display
 from Xlib.protocol.event import (
     DestroyNotify,
+    EnterNotify,
     KeyPress,
+    LeaveNotify,
     MapRequest,
     UnmapNotify,
 )
@@ -25,8 +27,8 @@ EVENT_HANDLER_MAP = frozendict(
         X.MapRequest: "handle_map",
         X.ConfigureRequest: None,
         X.UnmapNotify: "handle_unmap",
-        X.EnterNotify: None,
-        X.LeaveNotify: None,
+        X.EnterNotify: "handle_focus_in",
+        X.LeaveNotify: "handle_focus_out",
         X.DestroyNotify: "handle_destroy",
         X.MapNotify: None,
     },
@@ -122,6 +124,26 @@ class S3WM:
             S3window(unmap_event.window, S3screen(self.display.screen())),
         )
 
+    def handle_focus_in(self, enter_event: EnterNotify) -> None:
+        """
+        Called when window gets focus.
+
+        :param enter_event: X11 event.
+        """
+        self.layout.focus_in(
+            S3window(enter_event.window, S3screen(self.display.screen())),
+        )
+
+    def handle_focus_out(self, leave_event: LeaveNotify) -> None:
+        """
+        Called when window lose focus.
+
+        :param leave_event: X11 event.
+        """
+        self.layout.focus_out(
+            S3window(leave_event.window, S3screen(self.display.screen())),
+        )
+
     def catch_events(self) -> None:
         """
         Setup event catching.
@@ -146,6 +168,7 @@ class S3WM:
         This function will set all needed variables to
         this WindowManager.
         """
+        logger.debug("Setting up root window")
         root_window = self.display.screen().root
         wm_name = self.display.intern_atom("_NET_WM_NAME")
         utf_string = self.display.intern_atom("UTF8_STRING")
@@ -161,15 +184,16 @@ class S3WM:
         :raises KeyboardInterrupt: if something has enterrupted the main process.
         """
         event = self.display.next_event()
+        logger.debug(f"Received event: {event.__class__}")
         if event.type in EVENT_HANDLER_MAP:
             handler_name = EVENT_HANDLER_MAP.get(event.type)
             if not handler_name:
                 return
-            key_handler = getattr(self, handler_name)
-            if key_handler:
-                logger.error(f"Handling event: {event.__class__}")
+            event_handler = getattr(self, handler_name)
+            if event_handler:
+                logger.debug(f"Found event_handler: {handler_name}")
                 try:
-                    key_handler(event)
+                    event_handler(event)
                 except KeyboardInterrupt:  # noqa: WPS329
                     raise
                 except Exception as exc:

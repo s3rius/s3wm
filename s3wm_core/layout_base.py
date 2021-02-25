@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from Xlib.protocol.display import Screen
-
 from s3wm_core.key_combination import KeyCombination
 from s3wm_core.s3window import S3window
 
@@ -23,14 +21,6 @@ class AbstractLayoutManager(ABC):
         """
 
     @abstractmethod
-    def update_layout(self, screen: Screen) -> None:
-        """
-        Place all windows according to rules defined here.
-
-        :param screen: current screen
-        """
-
-    @abstractmethod
     def remove_window(self, window: S3window) -> None:
         """
         Remove window from LayoutManager.
@@ -48,3 +38,21 @@ class AbstractLayoutManager(ABC):
         :return: List of key combinations
         """
         return []
+
+    def focus_in(self, window: S3window) -> None:
+        """
+        Notify about focusing on some specific window.
+
+        This function is used to be called when pointer is moved to some window.
+
+        :param window: window that pointer focusing at.
+        """
+
+    def focus_out(self, window: S3window) -> None:
+        """
+        Notify about event when pointer has stopped focusing on some window.
+
+        This function is used to be called when pointer has left some window.
+
+        :param window: window that lost focus.
+        """

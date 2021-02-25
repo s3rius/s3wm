@@ -1,12 +1,12 @@
 from collections import defaultdict
-from typing import Any, DefaultDict, List
+from typing import DefaultDict, List
 
-from Xlib.protocol.display import Screen
 from Xlib.X import ShiftMask
 
 from s3wm.layouts.default_tile.key_bindings import (
     change_gaps,
     change_tab,
+    change_window_size,
     kill_focused_window,
     move_focus,
     move_window_to_tab,
@@ -32,7 +32,7 @@ class DefaultTile(AbstractLayoutManager):
         """
         super().__init__(wm)
         self.tab_class.gaps = self.gaps
-        self.tabs: DefaultDict[int, Any] = defaultdict(self.tab_class)
+        self.tabs: DefaultDict[int, Tab] = defaultdict(self.tab_class)
         self.current_tab = 0
         self.tabs[self.current_tab].focus()
 
@@ -44,14 +44,6 @@ class DefaultTile(AbstractLayoutManager):
         """
         self.tabs[self.current_tab].add_window(window)
 
-    def update_layout(self, screen: Screen) -> None:
-        """
-        Update the whole layout layout.
-
-        :param screen: current screen.
-        """
-        self.tabs[self.current_tab].update_layout()
-
     def remove_window(self, window: S3window) -> None:
         """
         Remove window from current layout.
@@ -59,7 +51,6 @@ class DefaultTile(AbstractLayoutManager):
         :param window: removed window.
         """
         self.tabs[self.current_tab].remove_window(window)
-        self.update_layout(window.screen)
 
     def change_tab(self, tab_number: int) -> None:
         """
@@ -88,13 +79,32 @@ class DefaultTile(AbstractLayoutManager):
         :param tab_index: to which tab do we need to move.
         """
         window = self.tabs[self.current_tab].pop_focused_window()
-        self.tabs[tab_index].add_window(window)
+        if window:
+            self.tabs[tab_index].add_window(window)
 
     def kill_focused_window(self) -> None:
         """Kill focused window."""
         window = self.tabs[self.current_tab].pop_focused_window()
         if window:
             window.destroy()
+
+    def change_gap_value(self, gap_delta: int) -> None:
+        """
+        Update gap value for tabs.
+
+        :param gap_delta: delta to current gap value.
+        """
+        self.tab_class.gaps = min(self.tab_class.gaps + gap_delta, 100)
+        self.tab_class.gaps = max(0, self.tab_class.gaps)
+        self.tabs[self.current_tab].update_layout()
+
+    def change_main_window_size(self, delta: int) -> None:
+        """
+        Change main window size.
+
+        :param delta: size delta.
+        """
+        self.tabs[self.current_tab].change_main_window_size(delta)
 
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
@@ -148,6 +158,16 @@ class DefaultTile(AbstractLayoutManager):
                     modifiers=KeyCombination.default_mod_key,
                     key="plus",
                     action=change_gaps(2),
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="h",
+                    action=change_window_size(-5),
+                ),
+                KeyCombination(
+                    modifiers=KeyCombination.default_mod_key,
+                    key="l",
+                    action=change_window_size(5),
                 ),
             ],
         )

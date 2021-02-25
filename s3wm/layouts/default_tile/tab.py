@@ -13,6 +13,7 @@ class Tab:
     def __init__(self) -> None:
         self.windows: List[S3window] = []
         self.focused_window: Optional[S3window] = None
+        self.main_window_size = 50
 
     def focus(self) -> None:
         """Show all windows from tab and focus on the last one."""
@@ -103,6 +104,18 @@ class Tab:
             self.focused_window = self.windows[-1]
         self.update_layout()
 
+    def change_main_window_size(self, diff: int) -> None:
+        """
+        Change width of a main window.
+
+        :param diff: delta to current size.
+        """
+        if not self.windows or len(self.windows) == 1:
+            return
+        self.main_window_size = min(self.main_window_size + diff, 90)  # noqa: WPS432
+        self.main_window_size = max(10, self.main_window_size)
+        self.update_layout()
+
     def update_layout(self) -> None:  # noqa: C901, WPS210, WPS231, WPS213
         """Place all windows on layout nicely."""
         logger.debug("Updating layout")
@@ -110,7 +123,7 @@ class Tab:
         if not self.windows:
             return
 
-        main_window_width = 50
+        main_window_width = self.main_window_size
         main_width_gaps = 1
 
         if len(self.windows) == 1:
@@ -124,7 +137,6 @@ class Tab:
             y=self.gaps,
         )
         main_geom = main_window.geom
-        main_window.focus()
         if not main_geom:
             return
         main_window.resize(
@@ -140,10 +152,10 @@ class Tab:
         windows_x = main_geom.x + main_geom.width + self.gaps
         windows_y = 0
         for window in reversed(self.windows):
-            if window == self.focused_window:
+            if window == main_window:
                 continue
             window.resize(
-                width=50,  # noqa: WPS432
+                width=100 - self.main_window_size,  # : WPS432
                 height=height_percent,
                 percents=True,
             )
