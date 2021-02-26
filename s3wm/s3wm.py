@@ -192,6 +192,7 @@ class S3WM:
             event_handler = getattr(self, handler_name)
             if event_handler:
                 logger.debug(f"Found event_handler: {handler_name}")
+                logger.debug(f"Event info: {event}")
                 try:
                     event_handler(event)
                 except KeyboardInterrupt:  # noqa: WPS329

@@ -31,6 +31,15 @@ class S3window(object):
         return int(self.window.id)
 
     @property
+    def is_root(self) -> bool:
+        """
+        Property returns true if this window is root for display.
+
+        :return: boolean
+        """
+        return bool(self.id == self.screen.root_window.id)
+
+    @property
     def geom(self) -> Optional[WindowGeometry]:
         """
         Get window geometry.

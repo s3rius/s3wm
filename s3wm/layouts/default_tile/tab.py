@@ -154,7 +154,6 @@ class Tab:
     def update_layout(self) -> None:  # noqa: C901, WPS210, WPS231, WPS213
         """Place all windows on layout nicely."""
         logger.debug("Updating layout")
-        logger.info(self.gaps)
         if not self.windows:
             return
 
