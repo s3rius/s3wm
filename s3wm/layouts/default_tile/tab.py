@@ -85,6 +85,18 @@ class Tab:
         window.focus()
         self.update_layout()
 
+    def change_focused_window(self, new_window: S3window) -> None:
+        """
+        Change focus to window.
+
+        :param new_window: window to focus.
+        """
+        if new_window not in self.windows:
+            self.add_window(new_window)
+        else:
+            self.focused_window = new_window
+            new_window.focus()
+
     def remove_window(self, window: S3window) -> None:
         """
         Remove window from tab.

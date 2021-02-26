@@ -116,6 +116,14 @@ class DefaultTile(AbstractLayoutManager):
         """Move currently focused window backward."""
         self.tabs[self.current_tab].move_window_backward()
 
+    def focus_in(self, window: S3window) -> None:
+        """
+        Called when cursor enters window.
+
+        :param window: window that pointer focusing at.
+        """
+        self.tabs[self.current_tab].change_focused_window(window)
+
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:
         """Get Keys specific to your layout.
