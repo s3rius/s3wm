@@ -60,6 +60,10 @@ ignore =
   WPS100,
   ; Found too many methods
   WPS214,
+  ; Found too long ``try`` body
+  WPS229,
+  ; Found function with too much cognitive complexity
+  WPS231,
 
 
 per-file-ignores =

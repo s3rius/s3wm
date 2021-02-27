@@ -108,7 +108,6 @@ class Tab:
             if tab_window == window:
                 # If we have such window we can unmap it.
                 self.windows.pop(index)
-                window.unmap()
         self.focused_window = None
         # If we have other windows on our tab we focus on the last one.
         if self.windows:

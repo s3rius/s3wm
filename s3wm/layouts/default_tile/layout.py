@@ -122,8 +122,7 @@ class DefaultTile(AbstractLayoutManager):
 
         :param window: window that pointer focusing at.
         """
-        if not window.is_root:
-            self.tabs[self.current_tab].change_focused_window(window)
+        self.tabs[self.current_tab].change_focused_window(window)
 
     @classmethod
     def get_keys(cls) -> List[KeyCombination]:

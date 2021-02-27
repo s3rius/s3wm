@@ -1,11 +1,13 @@
 from typing import Any, Optional
 
-from Xlib.X import CurrentTime, RevertToParent
+from loguru import logger
+from Xlib.error import XError
+from Xlib.X import BadWindow, CurrentTime, RevertToParent
 from Xlib.xobject.drawable import Window
 
 from s3wm_core.s3screen import S3screen
 from s3wm_core.utils import get_window_geometry
-from s3wm_core.x_models import WindowGeometry
+from s3wm_core.x_models import WindowGeometry, XWindowAttributes, XWMState
 
 
 class S3window(object):
@@ -48,6 +50,60 @@ class S3window(object):
         """
         return get_window_geometry(self.window)
 
+    @property
+    def attributes(self) -> Optional[XWindowAttributes]:
+        """
+        Return X11 window attributes.
+
+        :return: window attributes.
+        """
+        try:
+            attrs = self.window.get_attributes()
+            return XWindowAttributes.from_orm(attrs)
+        except XError as err:
+            logger.debug(f"Can't get window attributes. Cause: {err}")
+            return None
+
+    @property
+    def wm_state(self) -> Optional[XWMState]:
+        """
+        X11 Window startup state.
+
+        :return: current window wm_state.
+        """
+        try:
+            wm_state = self.window.get_wm_state()
+            if not wm_state:
+                return None
+        except XError as err:
+            logger.debug(f"Can't get window state. Cause: {err}")
+            return None
+        return XWMState(wm_state.state)
+
+    @wm_state.setter
+    def wm_state(self, new_state: XWMState) -> None:
+        """
+        Update wm_state.
+
+        :param new_state: new wm state.
+        """
+        self.window.set_wm_state(icon=0, state=new_state.value)
+
+    def get_transient(self) -> Optional["S3window"]:
+        """
+        Get transient window for current.
+
+        :return: transient window if any.
+        """
+        try:
+            transient = self.window.get_wm_transient_for()
+            if not transient:
+                return None
+            return S3window(transient, self.screen)
+        except BadWindow as bwerr:
+            logger.debug(f"Can't get transient. Cause: {bwerr}")
+        return None
+
     def map(self) -> None:
         """Maps window in X11."""
         self.window.map()
@@ -58,7 +114,6 @@ class S3window(object):
 
     def focus(self) -> None:
         """Set focus to window."""
-        self.window.warp_pointer(15, 15)  # noqa: WPS432
         self.window.set_input_focus(
             RevertToParent,
             CurrentTime,
