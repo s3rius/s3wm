@@ -14,7 +14,9 @@ from Xlib.protocol.event import (
     UnmapNotify,
 )
 from Xlib.Xcursorfont import left_ptr
+from Xlib.xobject.drawable import Window
 
+from s3wm_core.atoms import init_atoms
 from s3wm_core.keymap import get_key_action, init_keymap
 from s3wm_core.s3screen import S3screen
 from s3wm_core.s3window import S3window
@@ -68,6 +70,8 @@ class S3WM:
             (65535, 65535, 65535),
         )
         self.display.screen().root.change_attributes(cursor=cursor)
+        self.atoms = init_atoms(self.display)
+        S3window._atoms = self.atoms
 
     def run(self) -> None:
         """Runs window manager."""
@@ -221,12 +225,15 @@ class S3WM:
         this WindowManager.
         """
         logger.debug("Setting up root window")
-        root_window = self.display.screen().root
-        wm_name = self.display.intern_atom("_NET_WM_NAME")
-        utf_string = self.display.intern_atom("UTF8_STRING")
+        root_window: Window = self.display.screen().root
         # That thing needed only for Java applications.
         # Because Java can't handle custom window managers.
-        root_window.change_text_property(wm_name, utf_string, "LG3D")
+        root_window.change_text_property(
+            self.atoms.net_wm_name,
+            self.atoms.type_utf8_string,
+            "LG3D",
+        )
+        root_window.delete_property(self.atoms.net_client_list)
         self.display.sync()
 
     def _manage_window(self, window: S3window) -> None:

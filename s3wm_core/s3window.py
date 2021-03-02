@@ -5,6 +5,7 @@ from Xlib.error import XError
 from Xlib.X import BadWindow, CurrentTime, RevertToParent
 from Xlib.xobject.drawable import Window
 
+from s3wm_core.atoms import S3Atoms
 from s3wm_core.s3screen import S3screen
 from s3wm_core.utils import get_window_geometry
 from s3wm_core.x_models import WindowGeometry, XWindowAttributes, XWMState
@@ -12,6 +13,8 @@ from s3wm_core.x_models import WindowGeometry, XWindowAttributes, XWMState
 
 class S3window(object):
     """Main window abstraction for S3WM."""
+
+    _atoms: S3Atoms
 
     def __init__(
         self,
@@ -119,6 +122,16 @@ class S3window(object):
             CurrentTime,
         )
 
+    @property
+    def is_fullscreen(self) -> bool:
+        prop = self._get_atom_prop(self._atoms.net_wm_state_fullscreen)
+        return True
+
+    @property
+    def is_dialog(self) -> bool:
+        prop = self._get_atom_prop(self._atoms.net_window_type_dialog)
+        return False
+
     def resize(self, width: int, height: int, percents: bool = False) -> None:
         """
         Resize window.
@@ -156,6 +169,16 @@ class S3window(object):
     def destroy(self) -> None:
         """Kill window from X11."""
         self.window.destroy()
+
+    def _get_atom_prop(self, atom: int) -> Optional[Any]:
+        try:
+            return self.window.get_full_property(
+                atom,
+                self._atoms.type_atom,
+            )
+        except XError as err:
+            logger.exception(err)
+            return None
 
     def __str__(self) -> str:
         return f"<S3Window {self.id}>"
