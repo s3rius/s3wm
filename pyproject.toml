@@ -14,7 +14,7 @@ python = "^3.8"
 loguru = "^0.5.3"
 frozendict = "^1.2"
 pydantic = "^1.7.3"
-python-xlib = "^0.29"
+python-xlib = "^0.31"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
