@@ -50,7 +50,7 @@ combinations = [
 module_name = "user_config"
 conf_path = Path("~/.s3wm_conf.py").expanduser()
 
-try:  # noqa: WPS229
+try:
     if not conf_path.exists():
         raise ImportError
     spec = spec_from_file_location(module_name, str(conf_path))
