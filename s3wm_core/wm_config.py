@@ -60,5 +60,6 @@ try:
     sys.modules[module_name] = module
     spec.loader.exec_module(module)  # type: ignore
     from user_config import *  # noqa: F401, F403, WPS347, WPS433
-except ImportError:
+except ImportError as imp_err:
+    logger.exception(imp_err)
     logger.error("Can't import user config. Initialized with default.")

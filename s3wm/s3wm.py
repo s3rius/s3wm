@@ -1,5 +1,6 @@
+from argparse import Namespace
 from subprocess import Popen
-from typing import List
+from typing import List, Optional
 
 from frozendict import frozendict
 from loguru import logger
@@ -14,11 +15,12 @@ from Xlib.protocol.event import (
     UnmapNotify,
 )
 from Xlib.Xcursorfont import left_ptr
+from Xlib.xobject.drawable import Window
 
+from s3wm_core.atoms import S3WMAtoms
 from s3wm_core.keymap import get_key_action, init_keymap
 from s3wm_core.s3screen import S3screen
 from s3wm_core.s3window import S3window
-from s3wm_core.x_models import XMapState, XWMState
 
 EVENT_HANDLER_MAP = frozendict(
     {
@@ -45,7 +47,7 @@ class S3WM:
     Main
     """
 
-    def __init__(self) -> None:
+    def __init__(self, cli_args: Optional[Namespace] = None) -> None:
         """
         Initialize S3WM.
 
@@ -55,6 +57,9 @@ class S3WM:
         """
         from s3wm_core import wm_config  # noqa: WPS433
 
+        if cli_args is None:
+            cli_args = Namespace()
+        self.cli_args = cli_args
         self.display = Display()
         self.config = wm_config
         self.layout = wm_config.layout(self)
@@ -68,6 +73,8 @@ class S3WM:
             (65535, 65535, 65535),
         )
         self.display.screen().root.change_attributes(cursor=cursor)
+        self.atoms = S3WMAtoms.init_atoms(self.display)
+        S3window._atoms = self.atoms  # noqa: WPS437
 
     def run(self) -> None:
         """Runs window manager."""
@@ -78,12 +85,17 @@ class S3WM:
             "startup",
             lambda: logger.debug("No startup actions found"),
         )
-        self._catch_events()
-        self._setup_root()
+        self._set_up_listeners()
+        self._setup_root_window()
         startup()
-        self._reload_windows()
-        while True:  # noqa: WPS457
-            self._handle_next_event()
+        while True:
+            try:
+                self._handle_next_event()
+            except KeyboardInterrupt:
+                logger.info("Graceful Exiting")
+                break
+            except Exception as exc:
+                logger.exception(exc)
 
     def handle_map(self, map_event: MapRequest) -> None:
         """
@@ -97,11 +109,23 @@ class S3WM:
         """
         logger.debug("Map request")
         window = S3window(map_event.window, S3screen(self.display.screen()))
-        attrs = window.attributes
-        if not attrs:
+
+        if window.check_window_state(self.atoms.fd.window_state.fullscreen):
+            window.move(0, 0)
+            window.resize(100, 100, percents=True)
+            window.map()
             return
-        if attrs.override_redirect:
+
+        if window.check_window_state(self.atoms.fd.window_state.modal):
+            screen_geom = window.screen.geom
+            if window.geom:
+                window.move(
+                    screen_geom.width - (window.geom.width // 2),
+                    screen_geom.height - (window.geom.height // 2),
+                )
+            window.map()
             return
+
         self._manage_window(window)
 
     def handle_keypress(self, key_event: KeyPress) -> None:
@@ -121,7 +145,7 @@ class S3WM:
             action(self)
         else:
             logger.debug(f"Running os command: '{action}'")
-            Popen(action, shell=True)
+            Popen(action, start_new_session=True)
 
     def handle_destroy(self, destroy_event: DestroyNotify) -> None:
         """
@@ -133,7 +157,6 @@ class S3WM:
         window = S3window(destroy_event.window, S3screen(self.display.screen()))
         if window in self.windows:
             self.windows.remove(window)
-        window.wm_state = XWMState.WithdrawnState
         self.layout.remove_window(window)
 
     def handle_unmap(self, unmap_event: UnmapNotify) -> None:
@@ -146,7 +169,6 @@ class S3WM:
         window = S3window(unmap_event.window, S3screen(self.display.screen()))
         if window in self.windows:
             self.windows.remove(window)
-        window.wm_state = XWMState.WithdrawnState
         self.layout.remove_window(window)
         window.unmap()
 
@@ -172,12 +194,8 @@ class S3WM:
             return
         self.layout.focus_out(window)
 
-    def _handle_next_event(self) -> None:  # noqa: C901, WPS231
-        """
-        Request next event from X11 and handle it.
-
-        :raises KeyboardInterrupt: if something has interrupted the main process.
-        """
+    def _handle_next_event(self) -> None:  # , WPS231
+        """Request next event from X11 and handle it."""
         event = self.display.next_event()
         logger.debug(f"Received event: {event.__class__}")
         if event.type in EVENT_HANDLER_MAP:
@@ -188,15 +206,10 @@ class S3WM:
             if event_handler:
                 logger.debug(f"Found event_handler: {handler_name}")
                 logger.debug(f"Event info: {event}")
-                try:
-                    event_handler(event)
-                except KeyboardInterrupt:  # noqa: WPS329
-                    raise
-                except Exception as exc:
-                    logger.exception(exc)
+                event_handler(event)
                 logger.debug("event handled")
 
-    def _catch_events(self) -> None:
+    def _set_up_listeners(self) -> None:
         """
         Setup event catching.
 
@@ -213,20 +226,30 @@ class S3WM:
         )
         self.display.screen().root.change_attributes(event_mask=mask)
 
-    def _setup_root(self) -> None:
+    def _setup_root_window(self) -> None:
         """
         Setting up main window.
 
         This function will set all needed variables to
-        this WindowManager.
+        the Root window.
         """
         logger.debug("Setting up root window")
-        root_window = self.display.screen().root
-        wm_name = self.display.intern_atom("_NET_WM_NAME")
-        utf_string = self.display.intern_atom("UTF8_STRING")
-        # That thing needed only for Java applications.
-        # Because Java can't handle custom window managers.
-        root_window.change_text_property(wm_name, utf_string, "LG3D")
+
+        if not hasattr(self.cli_args, "wm_name"):  # noqa: WPS421
+            return
+
+        root_window: Window = self.display.screen().root
+        root_window.change_property(
+            self.atoms.fd.net_wm_check,
+            self.atoms.x11.type_window,
+            format=32,  # noqa: WPS432
+            data=[root_window.id],
+        )
+        root_window.change_text_property(
+            self.atoms.fd.net_wm_name,
+            self.atoms.x11.type_utf8_string,
+            self.cli_args.wm_name,
+        )
         self.display.sync()
 
     def _manage_window(self, window: S3window) -> None:
@@ -236,60 +259,7 @@ class S3WM:
         :param window: new window.
         """
         self.windows.append(window)
-        window.wm_state = XWMState.NormalState
         window.map()
         self.layout.add_window(window)
         mask = X.EnterWindowMask | X.LeaveWindowMask
         window.window.change_attributes(event_mask=mask)
-
-    def _reload_main_windows(self, children: List[S3window]) -> None:
-        """
-        Try to reload normal windows.
-
-        :param children: windows in memory.
-        """
-        logger.debug("Reloading ordinary windows")
-        for window in children:
-            attrs = window.attributes
-            if not attrs:
-                continue
-            wm_state = window.wm_state
-            if wm_state is None:
-                continue
-            transient = window.get_transient()
-            if transient:
-                continue
-            if (  # noqa: WPS337
-                attrs.map_state == XMapState.IsViewable
-                or wm_state == XWMState.IconicState
-            ):
-                self._manage_window(window)
-
-    def _reload_transient(self, children: List[S3window]) -> None:
-        """
-        Try to redraw transient windows.
-
-        :param children: windows in memory.
-        """
-        logger.debug("Reloading transient windows")
-        for window in children:
-            attrs = window.attributes
-            if not attrs:
-                continue
-            wm_state = window.wm_state
-            if not wm_state:
-                continue
-            transient = window.get_transient()
-            if transient and (  # noqa: WPS337
-                attrs.map_state == XMapState.IsViewable
-                or wm_state == XWMState.IconicState
-            ):
-                self._manage_window(window)
-
-    def _reload_windows(self) -> None:
-        """Query root window for children and render them if we can."""
-        response = self.display.screen().root.query_tree()
-        screen = S3screen(self.display.screen())
-        children = list(map(lambda win: S3window(win, screen), response.children))
-        self._reload_main_windows(children)
-        self._reload_transient(children)

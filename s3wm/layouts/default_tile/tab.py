@@ -19,7 +19,6 @@ class Tab:
         """Show all windows from tab and focus on the last one."""
         for window in self.windows:
             window.map()
-        self.update_layout()
         self.focused_window = None
         if self.windows:
             self.windows[-1].focus()

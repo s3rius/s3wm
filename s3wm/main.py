@@ -1,5 +1,5 @@
 import logging
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, Namespace
 from enum import Enum
 from importlib.metadata import version
 from sys import stdout
@@ -42,20 +42,31 @@ def parse_arguments() -> Namespace:
 
     :return: namespace with parsed args.
     """
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--version",
         "-v",
+        help="Print current version and exit.",
         action="store_true",
         dest="version",
     )
     parser.add_argument(
         "--log-level",
         "-l",
+        help="Set custom log level.",
         dest="log_level",
         type=Loglevel.from_string,
         choices=list(Loglevel),
         default=Loglevel.INFO,
+    )
+    parser.add_argument(
+        "--wm-name",
+        help="Mimic other Window manager's name",
+        dest="wm_name",
+        type=str,
+        default="S3WM",
     )
     return parser.parse_args()
 
@@ -69,5 +80,5 @@ def main() -> None:
         return
     logger.remove()
     logger.add(stdout, level=args.log_level.value)
-    wm = S3WM()
+    wm = S3WM(args)
     wm.run()
